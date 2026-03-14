@@ -1,0 +1,747 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fotobahar Astro Star Lab</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a31;
+      --panel2:#182341;
+      --text:#edf3ff;
+      --muted:#9fb0d5;
+      --line:#2a3967;
+      --accent:#8fb3ff;
+      --ok:#8ee6b1;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background: radial-gradient(circle at top, #18274e 0%, #0b1020 50%, #070b16 100%);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1400px;
+      margin:0 auto;
+      padding:24px;
+    }
+    .hero{
+      display:flex;
+      gap:18px;
+      align-items:flex-start;
+      justify-content:space-between;
+      margin-bottom:20px;
+      flex-wrap:wrap;
+    }
+    .hero h1{
+      margin:0 0 8px 0;
+      font-size:28px;
+      line-height:1.1;
+    }
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      max-width:900px;
+      line-height:1.55;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      padding:8px 12px;
+      border-radius:999px;
+      color:#dbe7ff;
+      font-size:13px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:18px;
+    }
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,.25);
+    }
+    .controls h2, .viewer h2{
+      margin:0 0 12px 0;
+      font-size:17px;
+    }
+    .hint{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+      margin-bottom:12px;
+    }
+    .group{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .group h3{
+      margin:0 0 10px 0;
+      font-size:14px;
+      color:#dfe9ff;
+    }
+    label{
+      display:block;
+      margin-bottom:10px;
+    }
+    .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:6px;
+      font-size:13px;
+      color:#dfe8ff;
+    }
+    input[type="range"]{
+      width:100%;
+      accent-color:#8fb3ff;
+    }
+    input[type="file"]{
+      width:100%;
+      padding:10px;
+      border-radius:12px;
+      background:#0c1326;
+      border:1px solid var(--line);
+      color:#dbe7ff;
+    }
+    .btns{
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:10px;
+      margin-top:10px;
+    }
+    button, select{
+      width:100%;
+      border:none;
+      border-radius:12px;
+      padding:11px 12px;
+      background:#243562;
+      color:#fff;
+      font-weight:600;
+      cursor:pointer;
+    }
+    button.secondary{
+      background:#162240;
+      border:1px solid var(--line);
+      color:#dfe8ff;
+    }
+    button.ghost{
+      background:transparent;
+      border:1px solid var(--line);
+      color:#dfe8ff;
+    }
+    select{
+      background:#0c1326;
+      border:1px solid var(--line);
+      font-weight:500;
+    }
+    .viewerTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .canvasWrap{
+      position:relative;
+      min-height:540px;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.08), transparent 20%),
+        linear-gradient(180deg, #05070f, #0b1020);
+      display:grid;
+      place-items:center;
+    }
+    canvas{
+      max-width:100%;
+      max-height:75vh;
+      display:block;
+      border-radius:10px;
+    }
+    .status{
+      margin-top:12px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.03);
+      color:#d9e5ff;
+      font-size:13px;
+      line-height:1.5;
+    }
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:8px;
+      line-height:1.45;
+    }
+    .pillbar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .pill{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#121a31;
+      color:#d7e5ff;
+      cursor:pointer;
+      font-size:12px;
+    }
+    .good{color:var(--ok)}
+    @media (max-width:1024px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <div class="badge">Astro Star Lab • Yıldız Odaklı İşleme</div>
+        <h1>Yalnızca yıldızlara dokunan premium astrofoto düzenleyici</h1>
+        <p>
+          Bu sürüm, yüklediğin görselde nebulaya ve arka plana mümkün olduğunca az dokunup yıldızları daha keskin,
+          daha kontrastlı, daha parlak ve istersen stilize diffraction spike’lı hale getirir.
+          Bilimsel doğruluk değil, premium görsel etki odaklıdır. Kozmik makyaj, ama kontrollü.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel controls">
+        <h2>Kontrol Paneli</h2>
+        <div class="hint">
+          Destek: JPG, PNG ve tarayıcının açabildiği görseller. En iyi sonuç için lineer olmayan, ön işlenmiş yıldız alanı yükle.
+          XISF/TIFF için gerçek profesyonel sürümde backend gerekir.
+        </div>
+
+        <div class="group">
+          <h3>1) Görsel Yükle</h3>
+          <input id="fileInput" type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/tiff,.tif,.tiff" />
+          <div class="small">Yüklenen dosya yalnızca bu tarayıcı sekmesinde işlenir.</div>
+        </div>
+
+        <div class="group">
+          <h3>2) Hızlı Preset</h3>
+          <div class="pillbar">
+            <button class="pill" data-preset="natural">Natural</button>
+            <button class="pill" data-preset="premium">Premium</button>
+            <button class="pill" data-preset="cinematic">Cinematic</button>
+            <button class="pill" data-preset="spikes">Spikes Pro</button>
+          </div>
+          <select id="viewMode">
+            <option value="final">Final görünüm</option>
+            <option value="split">Önce / Sonra bölünmüş</option>
+            <option value="mask">Yıldız maskesi</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <h3>3) Yıldız Algılama</h3>
+
+          <label>
+            <div class="row"><span>Eşik / Tespit hassasiyeti</span><span id="thresholdVal">28</span></div>
+            <input id="threshold" type="range" min="6" max="80" value="28" />
+          </label>
+
+          <label>
+            <div class="row"><span>Maks. yıldız yarıçapı</span><span id="radiusVal">7</span></div>
+            <input id="maxRadius" type="range" min="2" max="12" value="7" />
+          </label>
+
+          <label>
+            <div class="row"><span>Yalnızca parlak yıldızlara odak</span><span id="brightVal">45</span></div>
+            <input id="brightBias" type="range" min="0" max="100" value="45" />
+          </label>
+        </div>
+
+        <div class="group">
+          <h3>4) Yıldız İyileştirme</h3>
+
+          <label>
+            <div class="row"><span>Keskinlik</span><span id="sharpVal">58</span></div>
+            <input id="sharpness" type="range" min="0" max="100" value="58" />
+          </label>
+
+          <label>
+            <div class="row"><span>Parlak çekirdek güçlendirme</span><span id="coreVal">34</span></div>
+            <input id="coreBoost" type="range" min="0" max="100" value="34" />
+          </label>
+
+          <label>
+            <div class="row"><span>Renk doygunluğu</span><span id="satVal">28</span></div>
+            <input id="saturation" type="range" min="0" max="100" value="28" />
+          </label>
+
+          <label>
+            <div class="row"><span>Halo kontrolü</span><span id="haloVal">32</span></div>
+            <input id="haloControl" type="range" min="0" max="100" value="32" />
+          </label>
+        </div>
+
+        <div class="group">
+          <h3>5) Stilize Lens Etkisi</h3>
+
+          <label>
+            <div class="row"><span>Diffraction spikes</span><span id="spikeVal">22</span></div>
+            <input id="spikes" type="range" min="0" max="100" value="22" />
+          </label>
+
+          <label>
+            <div class="row"><span>Sadece en parlak yıldızlara uygula</span><span id="topStarsVal">12</span></div>
+            <input id="topStars" type="range" min="0" max="30" value="12" />
+          </label>
+
+          <label>
+            <div class="row"><span>Spike uzunluğu</span><span id="spikeLenVal">38</span></div>
+            <input id="spikeLength" type="range" min="0" max="100" value="38" />
+          </label>
+        </div>
+
+        <div class="btns">
+          <button id="processBtn">İşle</button>
+          <button class="secondary" id="resetBtn">Sıfırla</button>
+          <button class="ghost" id="downloadBtn">PNG indir</button>
+          <button class="ghost" id="downloadMaskBtn">Maskeyi indir</button>
+        </div>
+
+        <div class="status" id="statusBox">
+          Sistem hazır. Görsel yükle ve işlemeyi başlat.
+        </div>
+      </div>
+
+      <div class="panel viewer">
+        <div class="viewerTop">
+          <h2>Çıktı Önizleme</h2>
+          <div class="small">Split modunda sol taraf orijinal, sağ taraf işlenmiş.</div>
+        </div>
+        <div class="canvasWrap">
+          <canvas id="canvas"></canvas>
+        </div>
+        <div class="small">
+          Not: Bu sürüm yıldızları “daha üst seviye kamera ile çekilmiş” hissine yaklaştırır, fakat fiziksel gerçekliği birebir korumaz.
+          Spike ve çekirdek iyileştirme kontrollü yapay bir estetik efekt içerir. Tatlı sahtekârlık; ama kurumsal kalite sahtekârlığı.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $ = (id)=>document.getElementById(id);
+const canvas = $('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+let originalCanvas = document.createElement('canvas');
+let workingCanvas = document.createElement('canvas');
+let maskCanvas = document.createElement('canvas');
+let loaded = false;
+
+const state = {
+  threshold: 28,
+  maxRadius: 7,
+  brightBias: 45,
+  sharpness: 58,
+  coreBoost: 34,
+  saturation: 28,
+  haloControl: 32,
+  spikes: 22,
+  topStars: 12,
+  spikeLength: 38,
+  viewMode: 'final'
+};
+
+function setStatus(msg, ok=false){
+  $('statusBox').innerHTML = ok ? `<span class="good">●</span> ${msg}` : msg;
+}
+
+function updateLabels(){
+  for(const [id, target] of [
+    ['threshold','thresholdVal'],['maxRadius','radiusVal'],['brightBias','brightVal'],
+    ['sharpness','sharpVal'],['coreBoost','coreVal'],['saturation','satVal'],
+    ['haloControl','haloVal'],['spikes','spikeVal'],['topStars','topStarsVal'],['spikeLength','spikeLenVal']
+  ]){
+    $(target).textContent = $(id).value;
+    state[id] = +$(id).value;
+  }
+  state.viewMode = $('viewMode').value;
+}
+
+['threshold','maxRadius','brightBias','sharpness','coreBoost','saturation','haloControl','spikes','topStars','spikeLength','viewMode']
+  .forEach(id => $(id).addEventListener('input', updateLabels));
+
+updateLabels();
+
+document.querySelectorAll('[data-preset]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const p = btn.dataset.preset;
+    const presets = {
+      natural:   {threshold:30,maxRadius:6,brightBias:38,sharpness:46,coreBoost:22,saturation:15,haloControl:40,spikes:0,topStars:8,spikeLength:22},
+      premium:   {threshold:28,maxRadius:7,brightBias:45,sharpness:58,coreBoost:34,saturation:28,haloControl:32,spikes:22,topStars:12,spikeLength:38},
+      cinematic: {threshold:26,maxRadius:8,brightBias:52,sharpness:64,coreBoost:40,saturation:36,haloControl:26,spikes:28,topStars:14,spikeLength:48},
+      spikes:    {threshold:32,maxRadius:7,brightBias:58,sharpness:60,coreBoost:46,saturation:22,haloControl:28,spikes:58,topStars:18,spikeLength:66}
+    }[p];
+    Object.entries(presets).forEach(([k,v])=>$(k).value = v);
+    updateLabels();
+    if(loaded) processImage();
+  });
+});
+
+$('fileInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = ()=>{
+    const maxSide = 2200;
+    let w = img.width, h = img.height;
+    const scale = Math.min(1, maxSide / Math.max(w,h));
+    w = Math.round(w * scale);
+    h = Math.round(h * scale);
+
+    [originalCanvas, workingCanvas, maskCanvas, canvas].forEach(c=>{ c.width = w; c.height = h; });
+    originalCanvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    loaded = true;
+    setStatus(`Yüklendi: ${file.name} • ${w}×${h}. İşlemeye hazır.`, true);
+    processImage();
+    URL.revokeObjectURL(url);
+  };
+  img.onerror = ()=>{
+    setStatus('Görsel okunamadı. JPG veya PNG ile tekrar dene.');
+  };
+  img.src = url;
+});
+
+$('processBtn').addEventListener('click', ()=> loaded ? processImage() : setStatus('Önce bir görsel yükle.'));
+$('resetBtn').addEventListener('click', ()=>{
+  if(!loaded) return;
+  originalCanvas.getContext('2d').clearRect(0,0,originalCanvas.width,originalCanvas.height);
+  workingCanvas.getContext('2d').clearRect(0,0,workingCanvas.width,workingCanvas.height);
+  maskCanvas.getContext('2d').clearRect(0,0,maskCanvas.width,maskCanvas.height);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  $('fileInput').value = '';
+  loaded = false;
+  setStatus('Sıfırlandı. Yeni görsel yükleyebilirsin.');
+});
+$('downloadBtn').addEventListener('click', ()=>{
+  if(!loaded) return;
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'astro-star-lab-final.png';
+  a.click();
+});
+$('downloadMaskBtn').addEventListener('click', ()=>{
+  if(!loaded) return;
+  const a = document.createElement('a');
+  a.href = maskCanvas.toDataURL('image/png');
+  a.download = 'astro-star-mask.png';
+  a.click();
+});
+
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+function createBlurredGray(srcData, w, h, r=4){
+  const gray = new Float32Array(w*h);
+  for(let i=0, p=0; i<gray.length; i++, p+=4){
+    gray[i] = srcData[p]*0.2126 + srcData[p+1]*0.7152 + srcData[p+2]*0.0722;
+  }
+  const temp = new Float32Array(w*h);
+  const out = new Float32Array(w*h);
+
+  for(let y=0; y<h; y++){
+    let sum = 0;
+    for(let x=-r; x<=r; x++) sum += gray[y*w + clamp(x,0,w-1)];
+    for(let x=0; x<w; x++){
+      temp[y*w+x] = sum / (2*r+1);
+      const removeX = clamp(x-r,0,w-1);
+      const addX = clamp(x+r+1,0,w-1);
+      sum += gray[y*w+addX] - gray[y*w+removeX];
+    }
+  }
+  for(let x=0; x<w; x++){
+    let sum = 0;
+    for(let y=-r; y<=r; y++) sum += temp[clamp(y,0,h-1)*w + x];
+    for(let y=0; y<h; y++){
+      out[y*w+x] = sum / (2*r+1);
+      const removeY = clamp(y-r,0,h-1);
+      const addY = clamp(y+r+1,0,h-1);
+      sum += temp[addY*w+x] - temp[removeY*w+x];
+    }
+  }
+  return {gray, blurred: out};
+}
+
+function detectStars(imgData, w, h){
+  const src = imgData.data;
+  const {gray, blurred} = createBlurredGray(src, w, h, 4);
+  const mask = new Uint8ClampedArray(w*h);
+  const strengths = new Float32Array(w*h);
+  const threshold = state.threshold;
+  const bias = state.brightBias / 100;
+  const maxRadius = state.maxRadius;
+
+  for(let i=0; i<w*h; i++){
+    const residual = gray[i] - blurred[i];
+    const brightGate = gray[i] * (0.35 + bias);
+    const score = residual + brightGate * 0.18;
+    strengths[i] = score;
+    if(score > threshold) mask[i] = 255;
+  }
+
+  // tiny morphology: keep compact point-like structures
+  const compact = new Uint8ClampedArray(w*h);
+  for(let y=1; y<h-1; y++){
+    for(let x=1; x<w-1; x++){
+      const i = y*w+x;
+      if(!mask[i]) continue;
+      let cnt = 0;
+      for(let yy=-1; yy<=1; yy++){
+        for(let xx=-1; xx<=1; xx++){
+          if(mask[(y+yy)*w + (x+xx)]) cnt++;
+        }
+      }
+      if(cnt >= 2 && cnt <= 9) compact[i] = 255;
+    }
+  }
+
+  // Connected components to find star centers
+  const visited = new Uint8Array(w*h);
+  const stars = [];
+  const qx = new Int32Array(w*h);
+  const qy = new Int32Array(w*h);
+
+  for(let y=1; y<h-1; y++){
+    for(let x=1; x<w-1; x++){
+      const idx = y*w+x;
+      if(!compact[idx] || visited[idx]) continue;
+      let head=0, tail=0;
+      qx[tail]=x; qy[tail]=y; tail++;
+      visited[idx]=1;
+      let sumX=0,sumY=0,sumW=0,count=0,maxStrength=0;
+      let minX=x,maxX=x,minY=y,maxY=y;
+
+      while(head<tail){
+        const cx=qx[head], cy=qy[head]; head++;
+        const ci = cy*w+cx;
+        const s = Math.max(1, strengths[ci]);
+        sumX += cx*s; sumY += cy*s; sumW += s; count++;
+        maxStrength = Math.max(maxStrength, s);
+        minX = Math.min(minX,cx); maxX = Math.max(maxX,cx);
+        minY = Math.min(minY,cy); maxY = Math.max(maxY,cy);
+
+        for(let yy=-1; yy<=1; yy++){
+          for(let xx=-1; xx<=1; xx++){
+            const nx = cx+xx, ny = cy+yy;
+            const ni = ny*w+nx;
+            if(nx<1||ny<1||nx>=w-1||ny>=h-1) continue;
+            if(compact[ni] && !visited[ni]){
+              visited[ni]=1;
+              qx[tail]=nx; qy[tail]=ny; tail++;
+            }
+          }
+        }
+      }
+
+      const rw = maxX-minX+1, rh = maxY-minY+1;
+      const radius = Math.max(rw, rh)/2;
+      if(radius <= maxRadius && count <= Math.PI*maxRadius*maxRadius*1.6){
+        stars.push({
+          x: sumX/sumW,
+          y: sumY/sumW,
+          radius,
+          strength: maxStrength,
+          count
+        });
+      }
+    }
+  }
+
+  // Build soft mask around star centers
+  const maskImg = new ImageData(w,h);
+  for(const star of stars){
+    const rr = Math.max(2, Math.min(maxRadius+2, star.radius*2.4+1.4));
+    const x0 = Math.floor(star.x - rr), x1 = Math.ceil(star.x + rr);
+    const y0 = Math.floor(star.y - rr), y1 = Math.ceil(star.y + rr);
+    for(let y=y0; y<=y1; y++){
+      if(y<0||y>=h) continue;
+      for(let x=x0; x<=x1; x++){
+        if(x<0||x>=w) continue;
+        const dx = x-star.x, dy = y-star.y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if(d > rr) continue;
+        const feather = Math.exp(-(d*d)/(2*(rr*0.45)*(rr*0.45)));
+        const idx = (y*w+x)*4;
+        const v = Math.max(maskImg.data[idx], Math.round(255*feather));
+        maskImg.data[idx] = maskImg.data[idx+1] = maskImg.data[idx+2] = v;
+        maskImg.data[idx+3] = 255;
+      }
+    }
+  }
+
+  maskCanvas.getContext('2d').putImageData(maskImg,0,0);
+  return {stars, maskImg};
+}
+
+function applySelectiveEnhancement(imgData, maskImg, stars, w, h){
+  const out = new ImageData(new Uint8ClampedArray(imgData.data), w, h);
+  const src = imgData.data, dst = out.data, m = maskImg.data;
+  const sAmt = state.sharpness / 100;
+  const core = state.coreBoost / 100;
+  const sat = state.saturation / 100;
+  const halo = state.haloControl / 100;
+
+  // blurred copy for selective halo control / sharpening reference
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = w; tempCanvas.height = h;
+  const tctx = tempCanvas.getContext('2d');
+  tctx.putImageData(imgData,0,0);
+  tctx.filter = 'blur(1px)';
+  tctx.drawImage(tempCanvas,0,0);
+  const blur = tctx.getImageData(0,0,w,h).data;
+
+  for(let i=0; i<dst.length; i+=4){
+    const mask = (m[i]/255);
+    if(mask < 0.02) continue;
+
+    const r = src[i], g = src[i+1], b = src[i+2];
+    const br = blur[i], bg = blur[i+1], bb = blur[i+2];
+
+    // selective unsharp only under star mask
+    let nr = r + (r - br) * 1.5 * sAmt * mask;
+    let ng = g + (g - bg) * 1.5 * sAmt * mask;
+    let nb = b + (b - bb) * 1.5 * sAmt * mask;
+
+    // halo control: darken outer mask more than core
+    const haloFactor = (1 - mask) * halo;
+    nr -= br * haloFactor * 0.08;
+    ng -= bg * haloFactor * 0.08;
+    nb -= bb * haloFactor * 0.08;
+
+    // core boost near centers
+    const coreMask = Math.pow(mask, 2.2);
+    nr += coreMask * 255 * core * 0.18;
+    ng += coreMask * 255 * core * 0.18;
+    nb += coreMask * 255 * core * 0.18;
+
+    // saturation boost
+    const avg = (nr + ng + nb) / 3;
+    nr = avg + (nr - avg) * (1 + sat * mask * 1.2);
+    ng = avg + (ng - avg) * (1 + sat * mask * 1.2);
+    nb = avg + (nb - avg) * (1 + sat * mask * 1.2);
+
+    dst[i]   = clamp(Math.round(nr),0,255);
+    dst[i+1] = clamp(Math.round(ng),0,255);
+    dst[i+2] = clamp(Math.round(nb),0,255);
+  }
+
+  // stylized spikes on brightest stars
+  const spikeAmt = state.spikes / 100;
+  if(spikeAmt > 0){
+    const overlay = document.createElement('canvas');
+    overlay.width = w; overlay.height = h;
+    const octx = overlay.getContext('2d');
+    octx.putImageData(out,0,0);
+
+    const sorted = [...stars].sort((a,b)=>b.strength-a.strength).slice(0, Math.max(0, state.topStars));
+    const lenFactor = state.spikeLength / 100;
+    for(const star of sorted){
+      const x = star.x, y = star.y;
+      const len = (8 + star.strength * 0.09) * (0.5 + lenFactor * 1.4);
+      const alpha = Math.min(0.75, 0.12 + spikeAmt * 0.55 + star.strength / 900);
+      const grad = octx.createRadialGradient(x,y,0,x,y,len);
+      grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+      grad.addColorStop(0.15, `rgba(255,245,235,${alpha*0.75})`);
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      octx.strokeStyle = grad;
+      octx.lineWidth = 1.0 + Math.min(1.4, star.radius * 0.4);
+
+      octx.beginPath();
+      octx.moveTo(x-len, y); octx.lineTo(x+len, y);
+      octx.moveTo(x, y-len); octx.lineTo(x, y+len);
+      octx.stroke();
+
+      if(spikeAmt > 0.32){
+        const dlen = len * 0.78;
+        octx.globalAlpha = 0.78;
+        octx.beginPath();
+        octx.moveTo(x-dlen, y-dlen); octx.lineTo(x+dlen, y+dlen);
+        octx.moveTo(x-dlen, y+dlen); octx.lineTo(x+dlen, y-dlen);
+        octx.stroke();
+        octx.globalAlpha = 1;
+      }
+    }
+    return octx.getImageData(0,0,w,h);
+  }
+  return out;
+}
+
+function renderView(originalData, finalData, maskImg, w, h){
+  if(state.viewMode === 'final'){
+    ctx.putImageData(finalData, 0, 0);
+    return;
+  }
+  if(state.viewMode === 'mask'){
+    ctx.putImageData(maskImg, 0, 0);
+    return;
+  }
+  // split
+  const split = Math.floor(w/2);
+  const merged = new ImageData(w,h);
+  for(let y=0; y<h; y++){
+    for(let x=0; x<w; x++){
+      const i = (y*w+x)*4;
+      const src = x < split ? originalData.data : finalData.data;
+      merged.data[i]   = src[i];
+      merged.data[i+1] = src[i+1];
+      merged.data[i+2] = src[i+2];
+      merged.data[i+3] = 255;
+    }
+  }
+  ctx.putImageData(merged,0,0);
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(split+0.5, 0);
+  ctx.lineTo(split+0.5, h);
+  ctx.stroke();
+}
+
+function processImage(){
+  if(!loaded) return;
+  setStatus('Yıldız tespiti ve seçici iyileştirme çalışıyor...');
+  requestAnimationFrame(()=>{
+    const w = originalCanvas.width, h = originalCanvas.height;
+    const origCtx = originalCanvas.getContext('2d');
+    const originalData = origCtx.getImageData(0,0,w,h);
+
+    const {stars, maskImg} = detectStars(originalData, w, h);
+    const finalData = applySelectiveEnhancement(originalData, maskImg, stars, w, h);
+
+    renderView(originalData, finalData, maskImg, w, h);
+    workingCanvas.getContext('2d').putImageData(finalData,0,0);
+
+    const strongCount = [...stars].filter(s=>s.strength > state.threshold + 18).length;
+    setStatus(`İşlem tamamlandı. ${stars.length} yıldız tespit edildi, ${strongCount} tanesi güçlü segmentte işlendi. Görüntü modu: ${state.viewMode}.`, true);
+  });
+}
+</script>
+</body>
+</html>
